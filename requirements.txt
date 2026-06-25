@@ -1,0 +1,6 @@
+requests
+python-dotenv
+coinbase-advanced-py
+streamlit
+psycopg2-binary
+pandas

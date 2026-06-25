@@ -1,0 +1,43 @@
+services:
+  # Service 1: Python Injector Engine
+  crypto-tracker:
+    build: .
+    container_name: live_tracker_engine
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - crypto-db  # Tells Docker to boot the database BEFORE starting the Python script
+
+  # Service 2: Relational Database
+  crypto-db:
+    image: postgres:15
+    container_name: postgres_database_engine
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data  # This acts like your -v flag, keeping database data safe on boot
+  
+  #Service 3: Dashboard
+  crypto-dashboard:
+    build: .
+    container_name: live_dashboard_ui
+    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501" # Maps the container's web port to your Mac's browser
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - crypto-db
+
+volumes:
+  pgdata:  # Creates a permanent storage drive managed by Docker for your data
